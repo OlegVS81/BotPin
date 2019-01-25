@@ -11,21 +11,22 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using sl = System.Threading.Thread;
+using SCond = SeleniumExtras.WaitHelpers.ExpectedConditions;
 
 namespace BotPin
 {
     class Program
     {
-
+        
         static IWebDriver driver;
         static WebDriverWait wait;
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
-
         static int BotGo(int t)
         {
-
+           //Rubricator rb = new Rubricator(driver, AppDomain.CurrentDomain.BaseDirectory);
+           
 
             if (t == 5)
             {
@@ -33,7 +34,7 @@ namespace BotPin
             }
             else
             {
-                logger.Debug("  Попытка № {0}", t+1);
+                logger.Debug("Попытка № {0}", t + 1);
                 try
                 {
 
@@ -46,7 +47,7 @@ namespace BotPin
                     //закрываю подписку, если предлагает               
                     try
                     {
-                        wait.Until(ExpectedConditions.ElementExists(By.Id("sysNotifyInvitePopup")));
+                        wait.Until(SCond.ElementExists(By.Id("sysNotifyInvitePopup")));
                         js.ExecuteScript("$('#sysNotifyInvitePopup').dialog('close'); return false;");
                         logger.Debug("log {0}", "закрываю подписку");
                     }
@@ -58,7 +59,7 @@ namespace BotPin
 
 
                     //добавляю pin
-                    wait.Until(ExpectedConditions.ElementExists(By.ClassName("AddIcon")));
+                    wait.Until(SCond.ElementExists(By.ClassName("AddIcon")));
                     js.ExecuteScript("PinCreateLoader.open()");
                     logger.Debug("log {0}", "Нажата кнопка 'Добавить пин'");
 
@@ -68,13 +69,14 @@ namespace BotPin
                     //{
                     //    return x.FindElement(By.Id("sysPinCreatePopup")).Enabled;
                     //});
-                    wait.Until(ExpectedConditions.ElementExists(By.Id("sysPinCreatePopup")));
+                    wait.Until(SCond.ElementExists(By.Id("sysPinCreatePopup")));
+                    //wait.Until(c => c.FindElement(By.Id("sysPinCreatePopup")).Enabled);
                     js.ExecuteScript("PinCreate.open('add')");
                     logger.Debug("log {0}", "Нажата кнопка 'Из интернета'");
 
 
                     //произвольный пост
-                    XmlAttributeCollection attr = getAttr();
+                    XmlAttributeCollection attr = GetAttr();
 
                     logger.Debug("log Получили атрибут с urltogo='{0}'", attr.GetNamedItem("urltogo").Value.ToString());
                     logger.Debug("log Получили атрибут с urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
@@ -83,8 +85,9 @@ namespace BotPin
 
 
                     //из интернета;
-                    wait.Until(ExpectedConditions.ElementExists(By.Name("url")));
+                    wait.Until(SCond.ElementExists(By.Name("url")));
                     List<IWebElement> linksToClickUrl = driver.FindElements(By.Name("url")).ToList();
+
                     ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickUrl[linksToClickUrl.Count - 1]);
                     linksToClickUrl[linksToClickUrl.Count - 1].SendKeys(attr.GetNamedItem("urltogo").Value.ToString());
 
@@ -179,7 +182,7 @@ namespace BotPin
                     logger.Debug("Не успешно добавлено фото");
                     driver.Close();
                     driver.Dispose();
-                    return BotGo(t+1);
+                    return BotGo(t + 1);
                 }
 
 
@@ -189,15 +192,20 @@ namespace BotPin
 
         static void Main(string[] args)
         {
-
-            BotGo(0);
-            Environment.Exit(0);
+            var r = new Rubricator(AppDomain.CurrentDomain.BaseDirectory, Resources.GoToUrl);
+            
+            if (r.SignIn(Resources.nickname, Resources.psw))
+            {
+                r.Subscription();
+                r.AddPin();
+            }
+            
+            //BotGo(0);
+            //Environment.Exit(0);
 
         }
 
-        
-
-        static XmlAttributeCollection getAttr()
+        static XmlAttributeCollection GetAttr()
         {
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -206,7 +214,7 @@ namespace BotPin
 
             // получим корневой элемент
             XmlElement xRoot = xDoc.DocumentElement;
-            Random rnd = new Random();            
+            Random rnd = new Random();
 
             return xRoot.ChildNodes[rnd.Next(0, xRoot.ChildNodes.Count)].Attributes;
         }
@@ -220,11 +228,13 @@ namespace BotPin
 
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
-            wait.Until(ExpectedConditions.ElementExists(By.Name("nickname")));
+            wait.Until(SCond.ElementExists(By.Name("nickname")));
+            
             driver.FindElement(By.Name("nickname")).SendKeys(Resources.nickname);
 
 
-            wait.Until(ExpectedConditions.ElementExists(By.Name("password")));
+            wait.Until(SCond.ElementExists(By.Name("password")));
+            
             driver.FindElement(By.Name("password")).SendKeys(Resources.psw);
 
             driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(15);
@@ -233,12 +243,21 @@ namespace BotPin
             {
 
                 logger.Debug("Пытаемся логиниться под {0}", Resources.nickname);
-                wait.Until(ExpectedConditions.ElementExists(By.Id("sysForm_submit")));
+                wait.Until(SCond.ElementExists(By.Id("sysForm_submit")));
                 driver.FindElement(By.Id("sysForm_submit")).Click();
             }
-            catch (Exception ex){}
+            catch (Exception ex) { }
 
             driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(5);
+
+
+            //wait.Until((x) =>
+            //{
+            //    return driver.FindElements(By.ClassName("")).ToList().Count > 0;
+            //});
+
+            
+            //UserNav submenu submenu_hover
         }
 
         //public static bool IsElementExists(By iClassName, IWebElement we)
@@ -296,8 +315,6 @@ namespace BotPin
         }
 
 
-
-
         static void ClearXML()
         {
 
@@ -309,7 +326,7 @@ namespace BotPin
 
             XmlNodeList nodes = xDoc.GetElementsByTagName("pic");
 
-            
+
 
             StringBuilder xmlStr = new StringBuilder(@"<?xml version='1.0' encoding='windows-1251'?><root>");
 
@@ -337,4 +354,95 @@ namespace BotPin
             Console.WriteLine(xmlStr);
         }
     }
+
+    class Rubricator 
+    {
+        
+        private IWebDriver driver;
+        private WebDriverWait wait;
+        private readonly IJavaScriptExecutor js;
+
+        private Logger logger = LogManager.GetCurrentClassLogger();
+
+
+        public Rubricator(string chromeDriverDirectory, string url)
+        {
+            driver = new ChromeDriver(chromeDriverDirectory);
+            js = (IJavaScriptExecutor)driver;
+            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            driver.Navigate().GoToUrl(url);
+
+            logger.Debug("Перешли на сайт {0}", Resources.GoToUrl);
+        }
+
+        public bool SignIn( String nickname, String password)
+        {
+
+            wait.Until(SCond.ElementExists(By.Name("nickname")));
+            driver.FindElement(By.Name("nickname")).SendKeys(Resources.nickname);
+
+
+            wait.Until(SCond.ElementExists(By.Name("password")));
+            driver.FindElement(By.Name("password")).SendKeys(Resources.psw);
+
+            driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(5);
+
+            try
+            {
+
+                logger.Debug("Пытаемся логиниться под {0}", Resources.nickname);
+                wait.Until(SCond.ElementExists(By.Id("sysForm_submit")));
+                driver.FindElement(By.Id("sysForm_submit")).Click();
+            }
+            catch (Exception ex) { }
+
+            wait.Until((x) =>
+            {
+                return driver.FindElements(By.ClassName("UserNav")).ToList().Count > 0;
+            });
+
+
+            return driver.FindElements(By.ClassName("UserNav")).ToList().Count > 0;
+        }
+
+        public void Subscription()
+        {
+            //закрываю подписку, если предлагает               
+            try
+            {
+                wait.Until(SCond.ElementExists(By.Id("sysNotifyInvitePopup")));
+                js.ExecuteScript("$('#sysNotifyInvitePopup').dialog('close'); return false;");
+                logger.Debug("log {0}", "закрываю подписку");
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("log {0}", "Подписки нет");
+            }
+        }
+
+        public bool AddPin()
+        {
+            try
+            {
+                //добавляю pin
+                wait.Until(SCond.ElementExists(By.ClassName("AddIcon")));
+                js.ExecuteScript("PinCreateLoader.open()");
+                logger.Debug("log {0}", "Нажата кнопка 'Добавить пин'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+
+                logger.Debug("Не успешно добавлено фото");
+                //driver.Close();
+                //driver.Dispose();
+                return false;
+            }
+        }
+
+
+    }
+
+
 }

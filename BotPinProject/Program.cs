@@ -197,7 +197,8 @@ namespace BotPin
             if (r.SignIn(Resources.nickname, Resources.psw))
             {
                 r.Subscription();
-                r.AddPin();
+                r.ClickButtonAddPin();
+                r.ClickButtonFromInternet();
             }
             
             //BotGo(0);
@@ -358,15 +359,16 @@ namespace BotPin
     class Rubricator 
     {
         
-        private IWebDriver driver;
-        private WebDriverWait wait;
+        private readonly IWebDriver driver;
+        private readonly WebDriverWait wait;
         private readonly IJavaScriptExecutor js;
+        private XmlAttributeCollection attr;
 
-        private Logger logger = LogManager.GetCurrentClassLogger();
-
+        private Logger logger;
 
         public Rubricator(string chromeDriverDirectory, string url)
         {
+            logger = LogManager.GetCurrentClassLogger();
             driver = new ChromeDriver(chromeDriverDirectory);
             js = (IJavaScriptExecutor)driver;
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
@@ -396,12 +398,8 @@ namespace BotPin
             }
             catch (Exception ex) { }
 
-            wait.Until((x) =>
-            {
-                return driver.FindElements(By.ClassName("UserNav")).ToList().Count > 0;
-            });
-
-
+            //wait.Until(SCond.ElementExists(By.ClassName("UserNav")));
+            sl.Sleep(1000);
             return driver.FindElements(By.ClassName("UserNav")).ToList().Count > 0;
         }
 
@@ -420,27 +418,63 @@ namespace BotPin
             }
         }
 
-        public bool AddPin()
+        public bool ClickButtonAddPin()
         {
             try
             {
                 //добавляю pin
                 wait.Until(SCond.ElementExists(By.ClassName("AddIcon")));
-                js.ExecuteScript("PinCreateLoader.open()");
-                logger.Debug("log {0}", "Нажата кнопка 'Добавить пин'");
+                logger.Debug("Recept. Metod='ClickButtonAddPin'");
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-
-                logger.Debug("Не успешно добавлено фото");
-                //driver.Close();
-                //driver.Dispose();
+                logger.Debug("Refusal. Metod='ClickButtonAddPin'. Error: {0}", ex.ToString());
                 return false;
             }
         }
 
+        public bool ClickButtonFromInternet()
+        {
+            try
+            {
+                
+                wait.Until(SCond.ElementExists(By.Id("sysPinCreatePopup")));
+                js.ExecuteScript("PinCreate.open('add')");
+                logger.Debug("log {0}", "Нажата кнопка 'Из интернета'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("Refusal. Metod='ClickButtonFromInternet'. Error: {0}", ex.ToString());
+                return false;
+            }
+        }
+
+        private bool GetRendomAttributte()
+        {
+            try
+            {
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                XmlDocument xDoc = new XmlDocument();
+                xDoc.Load(AppDomain.CurrentDomain.BaseDirectory + Resources.xml);
+
+                // получим корневой элемент
+                XmlElement xRoot = xDoc.DocumentElement;
+                Random rnd = new Random();
+                logger.Debug("Got XmlAttribute-urltogo='{0}'", attr.GetNamedItem("urltogo").Value.ToString());
+                logger.Debug("Got XmlAttribute-urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
+                logger.Debug("Got XmlAttribute-desc='{0}'", attr.GetNamedItem("desc").Value.ToString());
+                attr = xRoot.ChildNodes[rnd.Next(0, xRoot.ChildNodes.Count)].Attributes;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("Refusal. Metod='ClickButtonFromInternet'. Error: {0}", ex.ToString());
+                return false;
+            }
+            
+        }
 
     }
 

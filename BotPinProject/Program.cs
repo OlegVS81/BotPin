@@ -446,7 +446,7 @@ namespace BotPin
             }
             catch (Exception ex)
             {
-                logger.Debug("Refusal. Metod='ClickButtonFromInternet'. Error: {0}", ex.ToString());
+                logger.Debug("Refusal.. Metod='ClickButtonFromInternet'. Error: {0}", ex.ToString());
                 return false;
             }
         }

@@ -192,15 +192,23 @@ namespace BotPin
 
         static void Main(string[] args)
         {
+            //CreateXML();
+
             var r = new Rubricator(AppDomain.CurrentDomain.BaseDirectory, Resources.GoToUrl);
-            
+
             if (r.SignIn(Resources.nickname, Resources.psw))
             {
                 r.Subscription();
                 r.ClickButtonAddPin();
                 r.ClickButtonFromInternet();
+                r.GetRendomAttributte();
+                r.SetURL();
+                r.SetPicture();
+                r.SetDesc();
+                r.SelectCollection();
+                r.Save();
             }
-            
+            sl.Sleep(10000);
             //BotGo(0);
             //Environment.Exit(0);
 
@@ -360,7 +368,7 @@ namespace BotPin
     {
         
         private readonly IWebDriver driver;
-        private readonly WebDriverWait wait;
+        private WebDriverWait wait;
         private readonly IJavaScriptExecutor js;
         private XmlAttributeCollection attr;
 
@@ -374,7 +382,7 @@ namespace BotPin
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             driver.Navigate().GoToUrl(url);
 
-            logger.Debug("Перешли на сайт {0}", Resources.GoToUrl);
+            logger.Debug(" Went to the {0}", Resources.GoToUrl);
         }
 
         public bool SignIn( String nickname, String password)
@@ -392,7 +400,7 @@ namespace BotPin
             try
             {
 
-                logger.Debug("Пытаемся логиниться под {0}", Resources.nickname);
+                logger.Debug(" Login as {0}", Resources.nickname);
                 wait.Until(SCond.ElementExists(By.Id("sysForm_submit")));
                 driver.FindElement(By.Id("sysForm_submit")).Click();
             }
@@ -410,11 +418,11 @@ namespace BotPin
             {
                 wait.Until(SCond.ElementExists(By.Id("sysNotifyInvitePopup")));
                 js.ExecuteScript("$('#sysNotifyInvitePopup').dialog('close'); return false;");
-                logger.Debug("log {0}", "закрываю подписку");
+                logger.Debug("Recept. Closed Subscription");
             }
             catch (Exception ex)
             {
-                logger.Debug("log {0}", "Подписки нет");
+                logger.Debug("Recept. No subscription offered");
             }
         }
 
@@ -424,6 +432,7 @@ namespace BotPin
             {
                 //добавляю pin
                 wait.Until(SCond.ElementExists(By.ClassName("AddIcon")));
+                js.ExecuteScript("PinCreateLoader.open()");
                 logger.Debug("Recept. Metod='ClickButtonAddPin'");
                 return true;
             }
@@ -441,7 +450,7 @@ namespace BotPin
                 
                 wait.Until(SCond.ElementExists(By.Id("sysPinCreatePopup")));
                 js.ExecuteScript("PinCreate.open('add')");
-                logger.Debug("log {0}", "Нажата кнопка 'Из интернета'");
+                logger.Debug("Recept. Metod='ClickButtonFromInternet'");
                 return true;
             }
             catch (Exception ex)
@@ -451,7 +460,7 @@ namespace BotPin
             }
         }
 
-        private bool GetRendomAttributte()
+        public bool GetRendomAttributte()
         {
             try
             {
@@ -462,10 +471,12 @@ namespace BotPin
                 // получим корневой элемент
                 XmlElement xRoot = xDoc.DocumentElement;
                 Random rnd = new Random();
+                attr = xRoot.ChildNodes[rnd.Next(0, xRoot.ChildNodes.Count)].Attributes;
+
+
                 logger.Debug("Got XmlAttribute-urltogo='{0}'", attr.GetNamedItem("urltogo").Value.ToString());
                 logger.Debug("Got XmlAttribute-urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
                 logger.Debug("Got XmlAttribute-desc='{0}'", attr.GetNamedItem("desc").Value.ToString());
-                attr = xRoot.ChildNodes[rnd.Next(0, xRoot.ChildNodes.Count)].Attributes;
                 return true;
             }
             catch (Exception ex)
@@ -473,7 +484,151 @@ namespace BotPin
                 logger.Debug("Refusal. Metod='ClickButtonFromInternet'. Error: {0}", ex.ToString());
                 return false;
             }
-            
+
+        }
+
+        public bool SetURL()
+        {
+            try
+            { 
+                //из интернета;
+                wait.Until(SCond.ElementExists(By.Name("url")));
+                List<IWebElement> linksToClickUrl = driver.FindElements(By.Name("url")).ToList();
+
+                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickUrl[linksToClickUrl.Count - 1]);
+                linksToClickUrl[linksToClickUrl.Count - 1].SendKeys(attr.GetNamedItem("urltogo").Value.ToString());
+
+                List<IWebElement> linksToClickFind = driver.FindElements(By.ClassName("wr_bordered_button")).ToList();
+                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickFind[linksToClickFind.Count - 1]);
+                linksToClickFind[linksToClickFind.Count - 1].Click();
+                logger.Debug("Recept. Metod='SetURL'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("Refusal. Metod='SetURL'. Error: {0}", ex.ToString());
+                return false;
+            }
+
+        }
+
+
+
+        public bool SetPicture()
+        {
+
+            try
+            {
+                //WaitLoadPictures
+                sl.Sleep(5000);
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+                wait.Until((x) =>
+                {
+                    return driver.FindElements(By.XPath("//img[@src='https://cdn-nus-1.pinme.ru/asset/rele/img/icons/uploading_3.gif']")).ToList().Count > 0;
+                });
+
+                List<IWebElement> linksloadImg = driver.FindElements(By.XPath("//img[@src='https://cdn-nus-1.pinme.ru/asset/rele/img/icons/uploading_3.gif']")).ToList();
+
+                logger.Debug("Found {0} radial progress bars. Start waiting for pictures to be loaded.", linksloadImg.Count.ToString());
+                sl.Sleep(1000);
+
+                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+                wait.Until((x) =>
+                {
+                    return !linksloadImg[linksloadImg.Count - 1].Displayed;
+                });
+                logger.Debug("Pictures uploaded");
+
+                js.ExecuteScript(string.Format("document.getElementsByClassName('imgWrap')[0].getElementsByTagName('img')[0].setAttribute('src', '{0}')", attr.GetNamedItem("urlpic").Value.ToString()));
+                logger.Debug("Set picture urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
+
+                sl.Sleep(1000);
+                //wait.Until(ExpectedConditions.ElementExists(By.XPath("//input[@value='Выбрать']")));
+                List<IWebElement> linksToClickToChoise = driver.FindElements(By.XPath("//input[@value='Выбрать']")).ToList();
+                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickToChoise[linksToClickToChoise.Count - 1]);
+                linksToClickToChoise[linksToClickToChoise.Count - 1].Click();
+                logger.Debug("Press the 'Выбрать' button.");
+
+                logger.Debug("Recept. Metod='SetPicture'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("Refusal. Metod='SetPicture'. Error: {0}", ex.ToString());
+                return false;
+            }
+
+        }
+
+
+        public bool SetDesc()
+        {
+
+            try
+            {
+
+                sl.Sleep(1000);
+                //wait.Until(ExpectedConditions.ElementExists(By.Id("sysForm_id_descr")));
+                List<IWebElement> linksToClickDescr = driver.FindElements(By.Id("sysForm_id_descr")).ToList();
+                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickDescr[linksToClickDescr.Count - 1]);
+                linksToClickDescr[linksToClickDescr.Count - 1].SendKeys(attr.GetNamedItem("desc").Value.ToString());
+                logger.Debug("Set desc='{0}'", attr.GetNamedItem("desc").Value.ToString());
+
+                logger.Debug("Recept. Metod='SetDesc'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("Refusal. Metod='SetDesc'. Error: {0}", ex.ToString());
+                return false;
+            }
+
+        }
+
+
+        public bool SelectCollection()
+        {
+
+            try
+            {
+                sl.Sleep(1000);
+                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].style='display: block;'", driver.FindElement(By.ClassName("BoardsListControl")));
+                driver.FindElement(By.XPath("//span[@value='1464410']")).Click();
+
+                logger.Debug("Recept. Metod='SelectCollection'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("Refusal. Metod='SelectCollection'. Error: {0}", ex.ToString());
+                return false;
+            }
+
+        }
+
+
+        public bool Save()
+        {
+
+            try
+            {
+
+                sl.Sleep(2000);
+                //wait.Until(ExpectedConditions.ElementExists(By.XPath("//input[@value='Сохранить']")));
+                List<IWebElement> linksToClickSave = driver.FindElements(By.XPath("//input[@value='Сохранить']")).ToList();
+                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickSave[linksToClickSave.Count - 1]);
+                linksToClickSave[linksToClickSave.Count - 1].Click();
+                logger.Debug("Press the 'Сохранить' button.");
+
+                logger.Debug("Recept. Metod='Save'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("Refusal. Metod='Save'. Error: {0}", ex.ToString());
+                return false;
+            }
+
         }
 
     }

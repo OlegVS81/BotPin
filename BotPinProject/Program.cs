@@ -192,23 +192,23 @@ namespace BotPin
 
         static void Main(string[] args)
         {
-            //CreateXML();
+            CreateXML();
+            ClearXML();
+            //var r = new Rubricator(AppDomain.CurrentDomain.BaseDirectory, Resources.GoToUrl);
 
-            var r = new Rubricator(AppDomain.CurrentDomain.BaseDirectory, Resources.GoToUrl);
-
-            if (r.SignIn(Resources.nickname, Resources.psw))
-            {
-                r.Subscription();
-                r.ClickButtonAddPin();
-                r.ClickButtonFromInternet();
-                r.GetRendomAttributte();
-                r.SetURL();
-                r.SetPicture();
-                r.SetDesc();
-                r.SelectCollection();
-                r.Save();
-            }
-            sl.Sleep(10000);
+            //if (r.SignIn(Resources.nickname, Resources.psw))
+            //{
+            //    r.Subscription();
+            //    r.ClickButtonAddPin();
+            //    r.ClickButtonFromInternet();
+            //    r.GetRendomAttributte();
+            //    r.SetURL();
+            //    r.SetPicture();
+            //    r.SetDesc();
+            //    r.SelectCollection();
+            //    r.Save();
+            //}
+            //sl.Sleep(10000);
             //BotGo(0);
             //Environment.Exit(0);
 
@@ -328,7 +328,7 @@ namespace BotPin
         {
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string att1, att2;
+            string attUrlpic, attDesc, attUrlGo;
 
             XmlDocument xDoc = new XmlDocument();
             xDoc.Load(AppDomain.CurrentDomain.BaseDirectory + Resources.xml);
@@ -342,11 +342,21 @@ namespace BotPin
             foreach (XmlNode node in nodes)
             {
 
-                att1 = node.Attributes.GetNamedItem("urlpic").Value.ToString();
+                attUrlpic = node.Attributes.GetNamedItem("urlpic").Value.ToString();
+                node.Attributes.GetNamedItem("urlpic").Value = attUrlpic.Replace("www.", "");
 
-                att2 = node.Attributes.GetNamedItem("desc").Value.ToString();
+                attUrlGo = node.Attributes.GetNamedItem("urltogo").Value.ToString();
+                node.Attributes.GetNamedItem("urltogo").Value = attUrlGo.Replace("www.", "");
 
-                if (!Regex.IsMatch(att1, @"\p{IsCyrillic}") & !Regex.IsMatch(att1, @"%") & !Regex.IsMatch(att2, @"2011") & !Regex.IsMatch(att2, @"2012") & !Regex.IsMatch(att2, @"2013") & !Regex.IsMatch(att2, @"2014") & !Regex.IsMatch(att2, @"2015"))
+                attDesc = node.Attributes.GetNamedItem("desc").Value.ToString();
+                node.Attributes.GetNamedItem("desc").Value = attDesc.Replace("2012", "");
+                node.Attributes.GetNamedItem("desc").Value = attDesc.Replace("2013", "");
+                node.Attributes.GetNamedItem("desc").Value = attDesc.Replace("2014", "");
+                node.Attributes.GetNamedItem("desc").Value = attDesc.Replace("2015", "");
+                node.Attributes.GetNamedItem("desc").Value = attDesc.Replace("2011", "");
+                
+
+                if (!Regex.IsMatch(attUrlpic, @"\p{IsCyrillic}") & !Regex.IsMatch(attUrlpic, @"%"))
                 {
                     xmlStr.Append(node.OuterXml);
                 }
@@ -373,6 +383,11 @@ namespace BotPin
         private XmlAttributeCollection attr;
 
         private Logger logger;
+
+
+        Dictionary<int, string> PinCollection = new Dictionary<int, string>();
+
+        //1464412" max_pins="">Прически с косами</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464406" pins="1464406" max_pins="">Проблемы волос</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464408" pins="1464408" max_pins="">Ретро прически</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464396" pins="1464396" max_pins="">Рыжие прически и окрашивание</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464413" pins="1464413" max_pins="">Советы и бьюти лайф хаки</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="690753" pins="690753" max_pins="">Средние Волосы</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464407" pins="1464407" max_pins="">Стрижки для тех, кому за 50</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464409" pins="1464409" max_pins="">Тренды</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464398" pins="1464398" max_pins="">Уход за волосами советы и подборки</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464393" pins="1464393" max_pins="">Хвост</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464401" pins="1464401" max_pins="">Хорошие видео уроки</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464414" pins="1464414" max_pins="">Челки</span></li></ul>
 
         public Rubricator(string chromeDriverDirectory, string url)
         {
@@ -567,6 +582,7 @@ namespace BotPin
             try
             {
 
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 sl.Sleep(1000);
                 //wait.Until(ExpectedConditions.ElementExists(By.Id("sysForm_id_descr")));
                 List<IWebElement> linksToClickDescr = driver.FindElements(By.Id("sysForm_id_descr")).ToList();
@@ -575,7 +591,17 @@ namespace BotPin
                 logger.Debug("Set desc='{0}'", attr.GetNamedItem("desc").Value.ToString());
 
                 logger.Debug("Recept. Metod='SetDesc'");
-                return true;
+
+                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].style='display: block;'", driver.FindElement(By.ClassName("BoardsListControl")));
+
+                List<IWebElement> Collections = driver.FindElements(By.XPath("//div[@class='BoardsListControl']/ul/li[2]/ul/li/span")).ToList();
+                
+                foreach (IWebElement Collection in Collections)
+                {
+                    PinCollection.Add(Convert.ToInt32(Collection.GetAttribute("value")), Collection.Text);
+                }
+
+                    return true;
             }
             catch (Exception ex)
             {

@@ -192,23 +192,27 @@ namespace BotPin
 
         static void Main(string[] args)
         {
-            CreateXML();
-            ClearXML();
-            //var r = new Rubricator(AppDomain.CurrentDomain.BaseDirectory, Resources.GoToUrl);
+            //CreateXML();
+            //ClearXML();
+            var r = new Rubricator(AppDomain.CurrentDomain.BaseDirectory, Resources.GoToUrl);
 
-            //if (r.SignIn(Resources.nickname, Resources.psw))
-            //{
-            //    r.Subscription();
-            //    r.ClickButtonAddPin();
-            //    r.ClickButtonFromInternet();
-            //    r.GetRendomAttributte();
-            //    r.SetURL();
-            //    r.SetPicture();
-            //    r.SetDesc();
-            //    r.SelectCollection();
-            //    r.Save();
-            //}
-            //sl.Sleep(10000);
+            if (r.SignIn(Resources.nickname, Resources.psw, 0))
+            {
+                r.Subscription(1000);
+                r.ClickButtonAddPin(1000);
+                r.ClickButtonFromInternet(1000);
+                r.GetRendomAttributte();
+                r.SetURL(1000);
+
+                r.SetPicture(1000);
+
+                r.SelectCollection(1000);
+                r.SetDesc(1000);
+
+                r.ClickButtonChoosePicture(1000);
+                r.ClickButtonSave(1000);
+            }
+            sl.Sleep(10000);
             //BotGo(0);
             //Environment.Exit(0);
 
@@ -323,7 +327,6 @@ namespace BotPin
             Console.WriteLine(xmlStr);
         }
 
-
         static void ClearXML()
         {
 
@@ -336,6 +339,7 @@ namespace BotPin
             XmlNodeList nodes = xDoc.GetElementsByTagName("pic");
 
 
+            XmlAttribute typeAttr = xDoc.CreateAttribute("collection");
 
             StringBuilder xmlStr = new StringBuilder(@"<?xml version='1.0' encoding='windows-1251'?><root>");
 
@@ -354,7 +358,23 @@ namespace BotPin
                 node.Attributes.GetNamedItem("desc").Value = attDesc.Replace("2014", "");
                 node.Attributes.GetNamedItem("desc").Value = attDesc.Replace("2015", "");
                 node.Attributes.GetNamedItem("desc").Value = attDesc.Replace("2011", "");
-                
+
+                if (Regex.IsMatch(node.Attributes.GetNamedItem("desc").Value.ToString().ToUpper(), "МУЖ"))
+                    typeAttr.Value = "Мужские стрижки и прически";
+                else if (Regex.IsMatch(node.Attributes.GetNamedItem("desc").Value.ToString().ToUpper(), "ДЕТ") || Regex.IsMatch(node.Attributes.GetNamedItem("desc").Value.ToString().ToUpper(), "ДЕВ"))
+                    typeAttr.Value = "Детские прически";
+                else if (Regex.IsMatch(node.Attributes.GetNamedItem("desc").Value.ToString().ToUpper(), "СРЕД"))
+                    typeAttr.Value = "Средние Волосы";
+                else if (Regex.IsMatch(node.Attributes.GetNamedItem("desc").Value.ToString().ToUpper(), "ДЛИН"))
+                    typeAttr.Value = "Длинные волосы";
+                else if (Regex.IsMatch(node.Attributes.GetNamedItem("desc").Value.ToString().ToUpper(), "КОРОТ"))
+                    typeAttr.Value = "Короткие волосы";
+                else if (Regex.IsMatch(node.Attributes.GetNamedItem("desc").Value.ToString().ToUpper(), "ВИДЕ"))
+                    typeAttr.Value = "Видео уроки причесок";
+                else
+                    typeAttr.Value = "Волосы";
+
+                node.Attributes.Append(typeAttr);
 
                 if (!Regex.IsMatch(attUrlpic, @"\p{IsCyrillic}") & !Regex.IsMatch(attUrlpic, @"%"))
                 {
@@ -385,8 +405,7 @@ namespace BotPin
         private Logger logger;
 
 
-        Dictionary<int, string> PinCollection = new Dictionary<int, string>();
-
+        //Dictionary<int, string> PinCollection = new Dictionary<int, string>();
         //1464412" max_pins="">Прически с косами</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464406" pins="1464406" max_pins="">Проблемы волос</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464408" pins="1464408" max_pins="">Ретро прически</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464396" pins="1464396" max_pins="">Рыжие прически и окрашивание</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464413" pins="1464413" max_pins="">Советы и бьюти лайф хаки</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="690753" pins="690753" max_pins="">Средние Волосы</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464407" pins="1464407" max_pins="">Стрижки для тех, кому за 50</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464409" pins="1464409" max_pins="">Тренды</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464398" pins="1464398" max_pins="">Уход за волосами советы и подборки</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464393" pins="1464393" max_pins="">Хвост</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464401" pins="1464401" max_pins="">Хорошие видео уроки</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464414" pins="1464414" max_pins="">Челки</span></li></ul>
 
         public Rubricator(string chromeDriverDirectory, string url)
@@ -400,7 +419,7 @@ namespace BotPin
             logger.Debug(" Went to the {0}", Resources.GoToUrl);
         }
 
-        public bool SignIn( String nickname, String password)
+        public bool SignIn( String nickname, String password, int timeWaitMilliseconds)
         {
 
             wait.Until(SCond.ElementExists(By.Name("nickname")));
@@ -426,7 +445,7 @@ namespace BotPin
             return driver.FindElements(By.ClassName("UserNav")).ToList().Count > 0;
         }
 
-        public void Subscription()
+        public void Subscription(int timeWaitMilliseconds)
         {
             //закрываю подписку, если предлагает               
             try
@@ -441,7 +460,7 @@ namespace BotPin
             }
         }
 
-        public bool ClickButtonAddPin()
+        public bool ClickButtonAddPin(int timeWaitMilliseconds)
         {
             try
             {
@@ -458,7 +477,7 @@ namespace BotPin
             }
         }
 
-        public bool ClickButtonFromInternet()
+        public bool ClickButtonFromInternet(int timeWaitMilliseconds)
         {
             try
             {
@@ -492,17 +511,18 @@ namespace BotPin
                 logger.Debug("Got XmlAttribute-urltogo='{0}'", attr.GetNamedItem("urltogo").Value.ToString());
                 logger.Debug("Got XmlAttribute-urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
                 logger.Debug("Got XmlAttribute-desc='{0}'", attr.GetNamedItem("desc").Value.ToString());
+                logger.Debug("Got XmlAttribute-collection='{0}'", attr.GetNamedItem("collection").Value.ToString());
                 return true;
             }
             catch (Exception ex)
             {
-                logger.Debug("Refusal. Metod='ClickButtonFromInternet'. Error: {0}", ex.ToString());
+                logger.Debug("Refusal. Metod='GetRendomAttributte'. Error: {0}", ex.ToString());
                 return false;
             }
 
         }
 
-        public bool SetURL()
+        public bool SetURL(int timeWaitMilliseconds)
         {
             try
             { 
@@ -529,13 +549,13 @@ namespace BotPin
 
 
 
-        public bool SetPicture()
+        public bool SetPicture(int timeWaitMilliseconds)
         {
 
             try
             {
                 //WaitLoadPictures
-                sl.Sleep(5000);
+                sl.Sleep(timeWaitMilliseconds);
                 wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
                 wait.Until((x) =>
                 {
@@ -557,12 +577,7 @@ namespace BotPin
                 js.ExecuteScript(string.Format("document.getElementsByClassName('imgWrap')[0].getElementsByTagName('img')[0].setAttribute('src', '{0}')", attr.GetNamedItem("urlpic").Value.ToString()));
                 logger.Debug("Set picture urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
 
-                sl.Sleep(1000);
-                //wait.Until(ExpectedConditions.ElementExists(By.XPath("//input[@value='Выбрать']")));
-                List<IWebElement> linksToClickToChoise = driver.FindElements(By.XPath("//input[@value='Выбрать']")).ToList();
-                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickToChoise[linksToClickToChoise.Count - 1]);
-                linksToClickToChoise[linksToClickToChoise.Count - 1].Click();
-                logger.Debug("Press the 'Выбрать' button.");
+
 
                 logger.Debug("Recept. Metod='SetPicture'");
                 return true;
@@ -576,14 +591,13 @@ namespace BotPin
         }
 
 
-        public bool SetDesc()
+        public bool SetDesc(int timeWaitMilliseconds)
         {
 
             try
             {
 
-                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                sl.Sleep(1000);
+                sl.Sleep(timeWaitMilliseconds);
                 //wait.Until(ExpectedConditions.ElementExists(By.Id("sysForm_id_descr")));
                 List<IWebElement> linksToClickDescr = driver.FindElements(By.Id("sysForm_id_descr")).ToList();
                 ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickDescr[linksToClickDescr.Count - 1]);
@@ -592,14 +606,14 @@ namespace BotPin
 
                 logger.Debug("Recept. Metod='SetDesc'");
 
-                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].style='display: block;'", driver.FindElement(By.ClassName("BoardsListControl")));
+                //((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].style='display: block;'", driver.FindElement(By.ClassName("BoardsListControl")));
 
-                List<IWebElement> Collections = driver.FindElements(By.XPath("//div[@class='BoardsListControl']/ul/li[2]/ul/li/span")).ToList();
+                //List<IWebElement> Collections = driver.FindElements(By.XPath("//div[@class='BoardsListControl']/ul/li[2]/ul/li/span")).ToList();
                 
-                foreach (IWebElement Collection in Collections)
-                {
-                    PinCollection.Add(Convert.ToInt32(Collection.GetAttribute("value")), Collection.Text);
-                }
+                //foreach (IWebElement Collection in Collections)
+                //{
+                //    PinCollection.Add(Convert.ToInt32(Collection.GetAttribute("value")), Collection.Text);
+                //}
 
                     return true;
             }
@@ -612,14 +626,16 @@ namespace BotPin
         }
 
 
-        public bool SelectCollection()
+        public bool SelectCollection(int timeWaitMilliseconds)
         {
 
             try
             {
-                sl.Sleep(1000);
+                sl.Sleep(timeWaitMilliseconds);
                 ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].style='display: block;'", driver.FindElement(By.ClassName("BoardsListControl")));
-                driver.FindElement(By.XPath("//span[@value='1464410']")).Click();
+                driver.FindElement(By.XPath(string.Format("//div[@class='BoardsListControl']/ul/li[2]/ul/li/span[text()='{0}']", attr.GetNamedItem("collection").Value.ToString()))).Click();
+
+                
 
                 logger.Debug("Recept. Metod='SelectCollection'");
                 return true;
@@ -633,17 +649,39 @@ namespace BotPin
         }
 
 
-        public bool Save()
+        public bool ClickButtonChoosePicture(int timeWaitMilliseconds)
+        {
+            try
+            {
+                sl.Sleep(timeWaitMilliseconds);
+                //wait.Until(ExpectedConditions.ElementExists(By.XPath("//input[@value='Выбрать']")));
+                List<IWebElement> linksToClickToChoise = driver.FindElements(By.XPath("//input[@value='Выбрать']")).ToList();
+                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickToChoise[linksToClickToChoise.Count - 1]);
+                linksToClickToChoise[linksToClickToChoise.Count - 1].Click();
+                logger.Debug("Press the 'Выбрать' button.");
+
+                logger.Debug("Recept. Metod='ClickButtonChoosePicture'");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.Debug("Refusal. Metod='ClickButtonChoosePicture'. Error: {0}", ex.ToString());
+                return false;
+            }
+        }
+
+        public bool ClickButtonSave(int timeWaitMilliseconds)
         {
 
             try
             {
 
-                sl.Sleep(2000);
+                sl.Sleep(timeWaitMilliseconds);
                 //wait.Until(ExpectedConditions.ElementExists(By.XPath("//input[@value='Сохранить']")));
                 List<IWebElement> linksToClickSave = driver.FindElements(By.XPath("//input[@value='Сохранить']")).ToList();
                 ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickSave[linksToClickSave.Count - 1]);
                 linksToClickSave[linksToClickSave.Count - 1].Click();
+
                 logger.Debug("Press the 'Сохранить' button.");
 
                 logger.Debug("Recept. Metod='Save'");

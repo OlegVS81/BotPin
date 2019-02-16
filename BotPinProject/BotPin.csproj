@@ -10,10 +10,10 @@
   <ItemGroup>
     <PackageReference Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
     <PackageReference Include="NLog" Version="4.5.11" />
-    <PackageReference Include="Selenium.Chrome.WebDriver" Version="2.43.0" />
+    <PackageReference Include="Selenium.Chrome.WebDriver" Version="2.45.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver.Extensions" Version="3.3.0" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.5.1" />
   </ItemGroup>
 
   <ItemGroup>

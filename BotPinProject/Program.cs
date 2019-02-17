@@ -18,11 +18,39 @@ namespace BotPin
     class Program
     {
         
-        static IWebDriver driver;
-        static WebDriverWait wait;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        static void Main(string[] args)
+        {
+            //CreateXML();
+            //ClearXML();
+            var r = new Rubricator(AppDomain.CurrentDomain.BaseDirectory, Resources.GoToUrl);
 
+            int i = 6;
+            while (i > 0)
+            {
+                if ((int)r.chekState == 999) break;
+                r.SignIn(Resources.nickname, Resources.psw, 1000);
+                r.Subscription(1000);
+                r.ClickButtonAddPin(1000);
+                r.ClickButtonFromInternet(1000);
+                r.GetRendomAttributte();
+                r.SetURL(1000);
+                r.ClickButtonFind(1000);
+                r.SetPicture(1000);
+                r.SelectCollection(1000);
+                r.SetDescription(1000);
+                r.ClickButtonChoosePicture(1000);
+                r.ClickButtonSave(1000);
+                i--;
+            }
+                       
+            sl.Sleep(10000);
+            r.Close(1000);
+            Environment.Exit(0);
+
+        }
+
+        /*
         static int BotGo(int t)
         {
            //Rubricator rb = new Rubricator(driver, AppDomain.CurrentDomain.BaseDirectory);
@@ -190,84 +218,61 @@ namespace BotPin
         }
 
 
-        static void Main(string[] args)
-        {
-            //CreateXML();
-            //ClearXML();
-            var r = new Rubricator(AppDomain.CurrentDomain.BaseDirectory, Resources.GoToUrl);
 
-            r.SignIn(Resources.nickname, Resources.psw, 1000);
-            r.Subscription(1000);
-            r.ClickButtonAddPin(1000);
-            r.ClickButtonFromInternet(1000);
-            r.GetRendomAttributte();
-            r.SetURL(1000);
-            r.SetPicture(1000);
-            r.SelectCollection(1000);
-            r.SetDescription(1000);
-            r.ClickButtonChoosePicture(1000);
-            r.ClickButtonSave(1000);    
+        //static XmlAttributeCollection GetAttr()
+        //{
 
-            sl.Sleep(10000);
-            //BotGo(0);
-            //Environment.Exit(0);
+        //    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        //    XmlDocument xDoc = new XmlDocument();
+        //    xDoc.Load(AppDomain.CurrentDomain.BaseDirectory + Resources.xml);
 
-        }
+        //    // получим корневой элемент
+        //    XmlElement xRoot = xDoc.DocumentElement;
+        //    Random rnd = new Random();
 
-        static XmlAttributeCollection GetAttr()
-        {
+        //    return xRoot.ChildNodes[rnd.Next(0, xRoot.ChildNodes.Count)].Attributes;
+        //}
 
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            XmlDocument xDoc = new XmlDocument();
-            xDoc.Load(AppDomain.CurrentDomain.BaseDirectory + Resources.xml);
+        //static void Login(string chrome)
+        //{
+        //    driver = new ChromeDriver(chrome);
+        //    driver.Navigate().GoToUrl(Resources.GoToUrl);
 
-            // получим корневой элемент
-            XmlElement xRoot = xDoc.DocumentElement;
-            Random rnd = new Random();
+        //    logger.Debug("Перешли на сайт {0}", Resources.GoToUrl);
 
-            return xRoot.ChildNodes[rnd.Next(0, xRoot.ChildNodes.Count)].Attributes;
-        }
+        //    wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
-        static void Login(string chrome)
-        {
-            driver = new ChromeDriver(chrome);
-            driver.Navigate().GoToUrl(Resources.GoToUrl);
-
-            logger.Debug("Перешли на сайт {0}", Resources.GoToUrl);
-
-            wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-
-            wait.Until(SCond.ElementExists(By.Name("nickname")));
+        //    wait.Until(SCond.ElementExists(By.Name("nickname")));
             
-            driver.FindElement(By.Name("nickname")).SendKeys(Resources.nickname);
+        //    driver.FindElement(By.Name("nickname")).SendKeys(Resources.nickname);
 
 
-            wait.Until(SCond.ElementExists(By.Name("password")));
+        //    wait.Until(SCond.ElementExists(By.Name("password")));
             
-            driver.FindElement(By.Name("password")).SendKeys(Resources.psw);
+        //    driver.FindElement(By.Name("password")).SendKeys(Resources.psw);
 
-            driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(15);
+        //    driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(15);
 
-            try
-            {
+        //    try
+        //    {
 
-                logger.Debug("Пытаемся логиниться под {0}", Resources.nickname);
-                wait.Until(SCond.ElementExists(By.Id("sysForm_submit")));
-                driver.FindElement(By.Id("sysForm_submit")).Click();
-            }
-            catch (Exception ) { }
+        //        logger.Debug("Пытаемся логиниться под {0}", Resources.nickname);
+        //        wait.Until(SCond.ElementExists(By.Id("sysForm_submit")));
+        //        driver.FindElement(By.Id("sysForm_submit")).Click();
+        //    }
+        //    catch (Exception ) { }
 
-            driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(5);
+        //    driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(5);
 
 
-            //wait.Until((x) =>
-            //{
-            //    return driver.FindElements(By.ClassName("")).ToList().Count > 0;
-            //});
+        //    //wait.Until((x) =>
+        //    //{
+        //    //    return driver.FindElements(By.ClassName("")).ToList().Count > 0;
+        //    //});
 
             
-            //UserNav submenu submenu_hover
-        }
+        //    //UserNav submenu submenu_hover
+        //}
 
         //public static bool IsElementExists(By iClassName, IWebElement we)
         //{
@@ -281,7 +286,7 @@ namespace BotPin
         //        return false;
         //    }
         //}
-
+        */
         static void CreateXML()
         {
 
@@ -402,24 +407,24 @@ namespace BotPin
 
         public enum State
         {
-            Start = 0,
-            SignIn = 1,
-            Subscription = 2,
-            ClickButtonAddPin = 3,
-            ClickButtonFromInternet = 4,
-            GetRendomAttributte = 5,
-            SetURL = 6,
-            SetPicture = 7,
-            SetDescription = 8,
-            SelectCollection = 9,
-            ClickButtonChoosePicture = 10,
-            ClickButtonSave = 11
+            Start,
+            SignIn,
+            Subscription,
+            ClickButtonAddPin,
+            ClickButtonFromInternet,
+            GetRendomAttributte,
+            SetURL,
+            ClickButtonFind,
+            SetPicture,
+            SelectCollection,
+            SetDescription,
+            ClickButtonChoosePicture,
+            ClickButtonSave = 999,
+            Close
         }
-
+        
         public State chekState {  get; private set; }
-        //Dictionary<int, string> PinCollection = new Dictionary<int, string>();
-        //1464412" max_pins="">Прически с косами</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464406" pins="1464406" max_pins="">Проблемы волос</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464408" pins="1464408" max_pins="">Ретро прически</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464396" pins="1464396" max_pins="">Рыжие прически и окрашивание</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464413" pins="1464413" max_pins="">Советы и бьюти лайф хаки</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="690753" pins="690753" max_pins="">Средние Волосы</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464407" pins="1464407" max_pins="">Стрижки для тех, кому за 50</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464409" pins="1464409" max_pins="">Тренды</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464398" pins="1464398" max_pins="">Уход за волосами советы и подборки</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464393" pins="1464393" max_pins="">Хвост</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464401" pins="1464401" max_pins="">Хорошие видео уроки</span></li><li class=""><em></em><span onclick = "javascript: return PinCreate.changeSub(this);" value="1464414" pins="1464414" max_pins="">Челки</span></li></ul>
-
+        
         public Rubricator(string chromeDriverDirectory, string url)
         {
             chekState = State.Start;
@@ -429,35 +434,47 @@ namespace BotPin
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
             driver.Navigate().GoToUrl(url);
 
-            logger.Debug(" Went to the {0}", Resources.GoToUrl);
+            logger.Debug("Went to the {0}", Resources.GoToUrl);
             
         }
 
-        public State SignIn( String nickname, String password, int timeWaitMilliseconds)
+        public State SignIn(String nickname, String password, int timeWaitMilliseconds)
         {
-
-            wait.Until(SCond.ElementExists(By.Name("nickname")));
-            driver.FindElement(By.Name("nickname")).SendKeys(Resources.nickname);
-
-
-            wait.Until(SCond.ElementExists(By.Name("password")));
-            driver.FindElement(By.Name("password")).SendKeys(Resources.psw);
-
-            driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(5);
-
-            try
+            if (chekState == State.Start)
             {
-                logger.Debug(" Login as {0}", Resources.nickname);
-                wait.Until(SCond.ElementExists(By.Id("sysForm_submit")));
-                driver.FindElement(By.Id("sysForm_submit")).Click();
+                try
+                {
+                    chekState = State.SignIn;
+
+                    sl.Sleep(timeWaitMilliseconds);
+                    wait.Until(SCond.ElementExists(By.Name("nickname")));
+                    driver.FindElement(By.Name("nickname")).SendKeys(Resources.nickname);
+
+
+                    wait.Until(SCond.ElementExists(By.Name("password")));
+                    driver.FindElement(By.Name("password")).SendKeys(Resources.psw);
+
+                    driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(5);
+
+
+                    logger.Debug(" Login as {0}", Resources.nickname);
+                    wait.Until(SCond.ElementExists(By.Id("sysForm_submit")));
+                    driver.FindElement(By.Id("sysForm_submit")).Click();
+                }
+                catch (Exception) { }
+
+                //wait.Until(SCond.ElementExists(By.ClassName("UserNav")));
+                sl.Sleep(timeWaitMilliseconds);
+
+                if (driver.FindElements(By.XPath(string.Format("//*[text()='{0}']", "Вход"))).ToList().Count > 0)
+                    logger.Debug("Refused. Metod='{0}'", "State.SignIn");
+                else
+                {
+                    chekState = State.SignIn;
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+
+                }
             }
-            catch (Exception ) { }
-
-            //wait.Until(SCond.ElementExists(By.ClassName("UserNav")));
-            sl.Sleep(timeWaitMilliseconds);
-            if (driver.FindElements(By.ClassName("UserNav")).ToList().Count > 0)
-                chekState = State.SignIn;
-
             return chekState;
         }
 
@@ -465,17 +482,19 @@ namespace BotPin
         {
             if (chekState != State.SignIn) return chekState;
 
+            chekState = chekState+1;
             //закрываю подписку, если предлагает               
             try
             {
                 wait.Until(SCond.ElementExists(By.Id("sysNotifyInvitePopup")));
                 js.ExecuteScript("$('#sysNotifyInvitePopup').dialog('close'); return false;");
-                logger.Debug("Recept. Closed Subscription");
-                chekState = State.Subscription;
+                
+                logger.Debug("Recept. Metod='{0}'", chekState);
             }
             catch (Exception )
             {
                 logger.Debug("Recept. No subscription offered");
+                chekState = chekState - 1;
             }
 
             return chekState;
@@ -483,155 +502,164 @@ namespace BotPin
 
         public State ClickButtonAddPin(int timeWaitMilliseconds)
         {
-            if (chekState != State.SignIn) return chekState;
-
-            try
+            if (chekState == State.SignIn || chekState == State.Subscription)
             {
-                //добавляю pin
-                wait.Until(SCond.ElementExists(By.ClassName("AddIcon")));
-                js.ExecuteScript("PinCreateLoader.open()");
-                logger.Debug("Recept. Metod='ClickButtonAddPin'");
+
                 chekState = State.ClickButtonAddPin;
+                try
+                {
+                    //добавляю pin
+                    wait.Until(SCond.ElementExists(By.ClassName("AddIcon")));
+                    js.ExecuteScript("PinCreateLoader.open()");
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = State.SignIn;
+                }
             }
-            catch (Exception ex)
-            {
-                logger.Debug("Refusal. Metod='ClickButtonAddPin'. Error: {0}", ex.ToString());
-            }
-
             return chekState;
         }
 
         public State ClickButtonFromInternet(int timeWaitMilliseconds)
         {
-            if (chekState != State.ClickButtonAddPin) return chekState;
-
-            try
+            if (chekState == State.ClickButtonAddPin)
             {
-                
-                wait.Until(SCond.ElementExists(By.Id("sysPinCreatePopup")));
-                js.ExecuteScript("PinCreate.open('add')");
-                logger.Debug("Recept. Metod='ClickButtonFromInternet'");
+
                 chekState = State.ClickButtonFromInternet;
-            }
-            catch (Exception ex)
-            {
-                logger.Debug("Refusal.. Metod='ClickButtonFromInternet'. Error: {0}", ex.ToString());
-            }
+                try
+                {
 
+                    wait.Until(SCond.ElementExists(By.Id("sysPinCreatePopup")));
+                    js.ExecuteScript("PinCreate.open('add')");
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = State.ClickButtonAddPin;
+                }
+            }
             return chekState;
         }
 
         public State GetRendomAttributte()
         {
-            if (chekState != State.ClickButtonFromInternet) return chekState;
-            try
+            if (chekState == State.ClickButtonFromInternet)
             {
-                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                XmlDocument xDoc = new XmlDocument();
-                xDoc.Load(AppDomain.CurrentDomain.BaseDirectory + Resources.xml);
-
-                // получим корневой элемент
-                XmlElement xRoot = xDoc.DocumentElement;
-                Random rnd = new Random();
-                attr = xRoot.ChildNodes[rnd.Next(0, xRoot.ChildNodes.Count)].Attributes;
-
-
-                logger.Debug("Got XmlAttribute-urltogo='{0}'", attr.GetNamedItem("urltogo").Value.ToString());
-                logger.Debug("Got XmlAttribute-urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
-                logger.Debug("Got XmlAttribute-desc='{0}'", attr.GetNamedItem("desc").Value.ToString());
-                logger.Debug("Got XmlAttribute-collection='{0}'", attr.GetNamedItem("collection").Value.ToString());
                 chekState = State.GetRendomAttributte;
-            }
-            catch (Exception ex)
-            {
-                logger.Debug("Refusal. Metod='GetRendomAttributte'. Error: {0}", ex.ToString());
+                try
+                {
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                    XmlDocument xDoc = new XmlDocument();
+                    xDoc.Load(AppDomain.CurrentDomain.BaseDirectory + Resources.xml);
+
+                    // получим корневой элемент
+                    XmlElement xRoot = xDoc.DocumentElement;
+                    Random rnd = new Random();
+                    attr = xRoot.ChildNodes[rnd.Next(0, xRoot.ChildNodes.Count)].Attributes;
+                    logger.Debug("Got XmlAttribute-urltogo='{0}'", attr.GetNamedItem("urltogo").Value.ToString());
+                    logger.Debug("Got XmlAttribute-urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
+                    logger.Debug("Got XmlAttribute-desc='{0}'", attr.GetNamedItem("desc").Value.ToString());
+                    logger.Debug("Got XmlAttribute-collection='{0}'", attr.GetNamedItem("collection").Value.ToString());
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = State.ClickButtonFromInternet;
+                }
             }
             return chekState;
         }
 
         public State SetURL(int timeWaitMilliseconds)
         {
-            if (chekState != State.GetRendomAttributte) return chekState;
-            try
-            { 
-                //из интернета;
-                wait.Until(SCond.ElementExists(By.Name("url")));
-                List<IWebElement> linksToClickUrl = driver.FindElements(By.Name("url")).ToList();
-
-                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickUrl[linksToClickUrl.Count - 1]);
-                linksToClickUrl[linksToClickUrl.Count - 1].SendKeys(attr.GetNamedItem("urltogo").Value.ToString());
-
-                List<IWebElement> linksToClickFind = driver.FindElements(By.ClassName("wr_bordered_button")).ToList();
-                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickFind[linksToClickFind.Count - 1]);
-                linksToClickFind[linksToClickFind.Count - 1].Click();
-                logger.Debug("Recept. Metod='SetURL'");
-                chekState = State.SetURL;
-            }
-            catch (Exception ex)
+            if (chekState == State.GetRendomAttributte)
             {
-                logger.Debug("Refusal. Metod='SetURL'. Error: {0}", ex.ToString());
+                chekState = State.SetURL;
+                try
+                {
+                    //из интернета;
+                    wait.Until(SCond.ElementExists(By.Name("url")));
+                    List<IWebElement> linksToClickUrl = driver.FindElements(By.Name("url")).ToList();
+
+                    ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickUrl[linksToClickUrl.Count - 1]);
+                    linksToClickUrl[linksToClickUrl.Count - 1].SendKeys(attr.GetNamedItem("urltogo").Value.ToString());
+
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = State.GetRendomAttributte;
+                }
             }
             return chekState;
         }
 
+
+        public State ClickButtonFind(int timeWaitMilliseconds)
+        {
+            if (chekState == State.SetURL)
+            {
+                chekState = State.ClickButtonFind;
+                try
+                {
+
+                    List<IWebElement> linksToClickFind = driver.FindElements(By.ClassName("wr_bordered_button")).ToList();
+                    ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickFind[linksToClickFind.Count - 1]);
+                    linksToClickFind[linksToClickFind.Count - 1].Click();
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = State.SetURL;
+                }
+            }
+            return chekState;
+        }
 
 
         public State SetPicture(int timeWaitMilliseconds)
         {
-            if (chekState != State.SetURL) return chekState;
-            try
+            if (chekState == State.ClickButtonFind)
             {
-                //WaitLoadPictures
-                sl.Sleep(timeWaitMilliseconds);
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
-                wait.Until((x) =>
+                chekState = chekState+1;
+                try
                 {
-                    return driver.FindElements(By.XPath("//img[@src='https://cdn-nus-1.pinme.ru/asset/rele/img/icons/uploading_3.gif']")).ToList().Count > 0;
-                });
+                    //WaitLoadPictures
+                    sl.Sleep(timeWaitMilliseconds);
+                    wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+                    wait.Until((x) =>
+                    {
+                        return driver.FindElements(By.XPath("//img[@src='https://cdn-nus-1.pinme.ru/asset/rele/img/icons/uploading_3.gif']")).ToList().Count > 0;
+                    });
 
-                List<IWebElement> linksloadImg = driver.FindElements(By.XPath("//img[@src='https://cdn-nus-1.pinme.ru/asset/rele/img/icons/uploading_3.gif']")).ToList();
+                    List<IWebElement> linksloadImg = driver.FindElements(By.XPath("//img[@src='https://cdn-nus-1.pinme.ru/asset/rele/img/icons/uploading_3.gif']")).ToList();
 
-                logger.Debug("Found {0} radial progress bars. Start waiting for pictures to be loaded.", linksloadImg.Count.ToString());
-                sl.Sleep(1000);
+                    logger.Debug("Found {0} radial progress bars. Start waiting for pictures to be loaded.", linksloadImg.Count.ToString());
+                    sl.Sleep(1000);
 
-                wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
-                wait.Until((x) =>
+                    wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+                    wait.Until((x) =>
+                    {
+                        return !linksloadImg[linksloadImg.Count - 1].Displayed;
+                    });
+                    logger.Debug("Pictures uploaded");
+
+                    js.ExecuteScript(string.Format("document.getElementsByClassName('imgWrap')[0].getElementsByTagName('img')[0].setAttribute('src', '{0}')", attr.GetNamedItem("urlpic").Value.ToString()));
+                    //logger.Debug("Set picture urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
+
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
                 {
-                    return !linksloadImg[linksloadImg.Count - 1].Displayed;
-                });
-                logger.Debug("Pictures uploaded");
-
-                js.ExecuteScript(string.Format("document.getElementsByClassName('imgWrap')[0].getElementsByTagName('img')[0].setAttribute('src', '{0}')", attr.GetNamedItem("urlpic").Value.ToString()));
-                logger.Debug("Set picture urlpic='{0}'", attr.GetNamedItem("urlpic").Value.ToString());
-
-                logger.Debug("Recept. Metod='SetPicture'");
-                chekState = State.SetPicture;
-            }
-            catch (Exception ex)
-            {
-                logger.Debug("Refusal. Metod='SetPicture'. Error: {0}", ex.ToString());
-            }
-            return chekState;
-        }
-
-
-        public State SetDescription(int timeWaitMilliseconds)
-        {
-            if (chekState != State.SetURL) return chekState;
-            try
-            {
-
-                sl.Sleep(timeWaitMilliseconds);
-                //wait.Until(ExpectedConditions.ElementExists(By.Id("sysForm_id_descr")));
-                List<IWebElement> linksToClickDescr = driver.FindElements(By.Id("sysForm_id_descr")).ToList();
-                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickDescr[linksToClickDescr.Count - 1]);
-                linksToClickDescr[linksToClickDescr.Count - 1].SendKeys(attr.GetNamedItem("desc").Value.ToString());
-                logger.Debug("Recept. Metod='SetDesc'. Set desc='{0}'", attr.GetNamedItem("desc").Value.ToString());
-                chekState = State.SetDescription;
-            }
-            catch (Exception ex)
-            {
-                logger.Debug("Refusal. Metod='SetDesc'. Error: {0}", ex.ToString());
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = chekState - 1;
+                }
             }
             return chekState;
         }
@@ -639,18 +667,49 @@ namespace BotPin
 
         public State SelectCollection(int timeWaitMilliseconds)
         {
-            if (chekState != State.SetURL) return chekState;
-            try
+            if (chekState == State.SetPicture)
             {
-                sl.Sleep(timeWaitMilliseconds);
-                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].style='display: block;'", driver.FindElement(By.ClassName("BoardsListControl")));
-                driver.FindElement(By.XPath(string.Format("//div[@class='BoardsListControl']/ul/li[2]/ul/li/span[text()='{0}']", attr.GetNamedItem("collection").Value.ToString()))).Click();
-                logger.Debug("Recept. Metod='SelectCollection'");
                 chekState = State.SelectCollection;
+                try
+                {
+                    sl.Sleep(timeWaitMilliseconds);
+                    ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].style='display: block;'", driver.FindElement(By.ClassName("BoardsListControl")));
+                    driver.FindElement(By.XPath(string.Format("//div[@class='BoardsListControl']/ul/li[2]/ul/li/span[text()='{0}']", attr.GetNamedItem("collection").Value.ToString()))).Click();
+
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = chekState-1;
+                }
             }
-            catch (Exception ex)
+            return chekState;
+        }
+
+
+        public State SetDescription(int timeWaitMilliseconds)
+        {
+            if (chekState == State.SelectCollection)
             {
-                logger.Debug("Refusal. Metod='SelectCollection'. Error: {0}", ex.ToString());
+                chekState = State.SetDescription;
+                try
+                {
+
+                    sl.Sleep(timeWaitMilliseconds);
+                    //wait.Until(ExpectedConditions.ElementExists(By.Id("sysForm_id_descr")));
+                    List<IWebElement> linksToClickDescr = driver.FindElements(By.Id("sysForm_id_descr")).ToList();
+                    ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickDescr[linksToClickDescr.Count - 1]);
+                    linksToClickDescr[linksToClickDescr.Count - 1].SendKeys(attr.GetNamedItem("desc").Value.ToString());
+
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = chekState - 1;
+                }
             }
             return chekState;
         }
@@ -658,42 +717,72 @@ namespace BotPin
 
         public State ClickButtonChoosePicture(int timeWaitMilliseconds)
         {
-            if (chekState != State.SelectCollection) return chekState;
-            try
+            if (chekState == State.SetDescription)
             {
-                sl.Sleep(timeWaitMilliseconds);
-                //wait.Until(ExpectedConditions.ElementExists(By.XPath("//input[@value='Выбрать']")));
-                List<IWebElement> linksToClickToChoise = driver.FindElements(By.XPath("//input[@value='Выбрать']")).ToList();
-                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickToChoise[linksToClickToChoise.Count - 1]);
-                linksToClickToChoise[linksToClickToChoise.Count - 1].Click();
-
-                logger.Debug("Recept. Metod='ClickButtonChoosePicture'");
                 chekState = State.ClickButtonChoosePicture;
-            }
-            catch (Exception ex)
-            {
-                logger.Debug("Refusal. Metod='ClickButtonChoosePicture'. Error: {0}", ex.ToString());
+                try
+                {
+                    sl.Sleep(timeWaitMilliseconds);
+                    //wait.Until(ExpectedConditions.ElementExists(By.XPath("//input[@value='Выбрать']")));
+                    List<IWebElement> linksToClickToChoise = driver.FindElements(By.XPath("//input[@value='Выбрать']")).ToList();
+                    ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickToChoise[linksToClickToChoise.Count - 1]);
+                    linksToClickToChoise[linksToClickToChoise.Count - 1].Click();
+
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = chekState - 1;
+                }
             }
             return chekState;
         }
 
         public State ClickButtonSave(int timeWaitMilliseconds)
         {
-            if (chekState != State.ClickButtonChoosePicture) return chekState;
-            try
+            if (chekState == State.ClickButtonChoosePicture)
             {
-                sl.Sleep(timeWaitMilliseconds);
-                //wait.Until(ExpectedConditions.ElementExists(By.XPath("//input[@value='Сохранить']")));
-                List<IWebElement> linksToClickSave = driver.FindElements(By.XPath("//input[@value='Сохранить']")).ToList();
-                ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickSave[linksToClickSave.Count - 1]);
-                linksToClickSave[linksToClickSave.Count - 1].Click();
-
-                logger.Debug("Recept. Metod='Save'");
                 chekState = State.ClickButtonSave;
+                try
+                {
+                    sl.Sleep(timeWaitMilliseconds);
+                    //wait.Until(ExpectedConditions.ElementExists(By.XPath("//input[@value='Сохранить']")));
+                    List<IWebElement> linksToClickSave = driver.FindElements(By.XPath("//input[@value='Сохранить']")).ToList();
+                    ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].setAttribute('class','vote-link up voted')", linksToClickSave[linksToClickSave.Count - 1]);
+                    linksToClickSave[linksToClickSave.Count - 1].Click();
+
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = chekState - 1;
+                }
             }
-            catch (Exception ex)
+            return chekState;
+        }
+
+
+
+
+        public State Close(int timeWaitMilliseconds)
+        {
+            if (driver != null)
             {
-                logger.Debug("Refusal. Metod='Save'. Error: {0}", ex.ToString());
+                chekState = State.Close;
+                try
+                {
+                    
+                    driver.Close();
+                    driver.Dispose();
+                    logger.Debug("Recept. Metod='{0}'", chekState);
+                }
+                catch (Exception ex)
+                {
+                    logger.Debug("Refused. Metod='{0}. Error: {1}", chekState, ex.ToString());
+                    chekState = chekState - 1;
+                }
             }
             return chekState;
         }
